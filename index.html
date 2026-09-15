@@ -1,0 +1,1872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Railroad Crash! LS 9.1.6 - Mind Test 9.1h</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=JetBrains+Mono:wght@600;800&family=Fredoka:wght@600;700;800&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Real-Time Internet WebSocket Relay for Cross-Laptop Classroom Sync on GitHub Pages -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+  
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      user-select: none;
+    }
+    .font-game {
+      font-family: 'Fredoka', cursive, sans-serif;
+    }
+    .font-code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .shake-anim {
+      animation: btnShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+    @keyframes btnShake {
+      10%, 90% { transform: translate3d(-3px, 0, 0); }
+      20%, 80% { transform: translate3d(4px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+      40%, 60% { transform: translate3d(6px, 0, 0); }
+    }
+    .screen-shake {
+      animation: screenShake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+    @keyframes screenShake {
+      10%, 90% { transform: translate3d(-4px, 3px, 0) rotate(-0.5deg); }
+      20%, 80% { transform: translate3d(5px, -4px, 0) rotate(0.8deg); }
+      30%, 50%, 70% { transform: translate3d(-7px, 5px, 0) rotate(-1deg); }
+      40%, 60% { transform: translate3d(6px, -3px, 0) rotate(1deg); }
+    }
+    .game-btn {
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 5px 0 rgba(0,0,0,0.3);
+    }
+    .game-btn:active:not(:disabled) {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 rgba(0,0,0,0.3);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.5);
+      border-radius: 8px;
+    }
+    .train-track-stripes {
+      background: repeating-linear-gradient(
+        90deg,
+        #1e293b 0px,
+        #1e293b 10px,
+        #475569 10px,
+        #475569 14px
+      );
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-start p-2 sm:p-4 overflow-x-hidden">
+
+  <header class="w-full max-w-7xl flex flex-wrap items-center justify-between gap-3 bg-slate-900/95 backdrop-blur border-2 border-slate-800 rounded-2xl px-4 sm:px-6 py-3 shadow-2xl mb-4">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-gradient-to-tr from-amber-500 to-rose-600 rounded-xl flex items-center justify-center text-white text-xl shadow-lg transform -rotate-6">
+        <i class="fa-solid fa-train"></i>
+      </div>
+      <div>
+        <h1 class="text-lg sm:text-xl font-black tracking-wide font-game text-amber-400 flex items-center gap-2">
+          RAILROAD CRASH! <span class="text-[11px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 px-2 py-0.5 rounded-full font-bold">MIND TEST 9.1h (p.244)</span>
+        </h1>
+        <p class="text-[11px] text-slate-400 font-semibold hidden md:block">Solve linear equations &bull; Exact junction collision &bull; Auto-saved progress</p>
+      </div>
+    </div>
+
+    <!-- Right Header Navigation Controls -->
+    <div class="flex items-center gap-2 sm:gap-2.5 ml-auto">
+      <!-- Live Cloud Sync Status Indicator -->
+      <div id="cloudSyncIndicator" class="flex items-center gap-1.5 bg-emerald-950/80 border border-emerald-500/40 px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-emerald-300 cursor-pointer" title="Click to view cloud connection details">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        <span id="cloudSyncText">Internet Live Relay Active</span>
+      </div>
+
+      <!-- Cloud Setup Modal Button -->
+      <button id="openCloudConfigBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs px-2.5 py-1.5 rounded-xl transition" title="Cloud Database Settings">
+        <i class="fa-solid fa-gear"></i>
+      </button>
+
+      <div id="headerUserBadge" class="hidden sm:flex items-center gap-2 bg-slate-800/90 border border-slate-700 px-3 py-1.5 rounded-xl text-xs">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span id="headerUserName" class="font-bold text-slate-200">Student</span>
+        <span id="headerClassBadge" class="bg-indigo-950 text-indigo-300 font-code px-2 py-0.5 rounded-md font-bold text-[10px] uppercase">CLASS</span>
+      </div>
+
+      <!-- Contextual Header Actions (Clean, Non-Duplicated) -->
+      <button id="navLobbyBtn" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 hover:border-amber-400/60 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 transition hidden">
+        <i class="fa-solid fa-house"></i>
+        <span>Menu</span>
+      </button>
+
+      <button id="navPlayBtn" class="hidden bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-slate-950 text-xs font-black font-game px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition shadow-lg shadow-amber-500/20">
+        <i class="fa-solid fa-gamepad"></i>
+        <span>Back to Game</span>
+      </button>
+
+      <button id="navOpenBoardPageBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition shadow-lg shadow-indigo-600/30">
+        <i class="fa-solid fa-chalkboard-user"></i>
+        <span>Class Board</span>
+      </button>
+
+      <button id="audioToggleBtn" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center transition border border-slate-700" title="Toggle Sound">
+        <i id="audioIcon" class="fa-solid fa-volume-high text-xs"></i>
+      </button>
+    </div>
+  </header>
+
+  <section id="lobbyScreen" class="w-full max-w-4xl bg-slate-900/90 border-2 border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col justify-between">
+    <div>
+      <div class="flex items-center gap-2 mb-2">
+        <span class="bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[11px] font-black uppercase px-2.5 py-0.5 rounded-md tracking-wider">
+          Student Profile
+        </span>
+        <span class="bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[11px] font-black uppercase px-2 py-0.5 rounded-md tracking-wider">
+          Form 3 KSSM
+        </span>
+      </div>
+      <h2 class="text-2xl sm:text-3xl font-black font-game text-white tracking-wide mb-1">
+        Enter Railroad Junction
+      </h2>
+      <p class="text-xs sm:text-sm text-slate-400 mb-6">
+        Enter your Name and Class Code. Progress in both <b class="text-slate-200">Substitution</b> and <b class="text-slate-200">Elimination</b> tracks auto-saves across laptops!
+      </p>
+
+      <div class="space-y-4 mb-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="studentNameInput" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-user text-amber-400"></i> Your Name:
+            </label>
+            <input type="text" id="studentNameInput" placeholder="e.g. Intan / Danial Lee" maxlength="24"
+              class="w-full bg-slate-950 border-2 border-slate-700 focus:border-amber-400 rounded-xl px-4 py-3 text-slate-100 font-bold placeholder-slate-500 focus:outline-none transition">
+          </div>
+
+          <div>
+            <label for="classCodeInput" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-graduation-cap text-indigo-400"></i> Class Code:
+            </label>
+            <input type="text" id="classCodeInput" placeholder="e.g. 3W or 3BESTARI" maxlength="16"
+              class="w-full bg-slate-950 border-2 border-slate-700 focus:border-indigo-400 rounded-xl px-4 py-3 text-slate-100 font-bold uppercase placeholder-slate-500 focus:outline-none transition">
+          </div>
+        </div>
+
+        <!-- Saved progress notification banner -->
+        <div id="savedProgressBanner" class="hidden bg-emerald-950/60 border-2 border-emerald-500/60 rounded-2xl p-3.5 text-xs text-emerald-200 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-clock-rotate-left text-emerald-400 text-base"></i>
+            <div>
+              <div class="font-bold text-emerald-300">Saved Progress Found!</div>
+              <div id="savedProgressText" class="text-[11px] text-emerald-200/80">You can resume your trains right where you left off.</div>
+            </div>
+          </div>
+          <button id="resumeSavedSessionBtn" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-game font-bold px-3 py-1.5 rounded-lg text-xs transition">
+            Resume Saved Track
+          </button>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-sliders text-rose-400"></i> Select Practice Method:
+          </label>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label class="relative flex flex-col p-3.5 bg-slate-950 border-2 border-blue-500/50 rounded-2xl cursor-pointer hover:border-blue-400 transition select-none">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-game font-black text-blue-300 text-sm flex items-center gap-1.5">
+                  <i class="fa-solid fa-right-left"></i> Substitution Method
+                </span>
+                <input type="radio" name="practiceMode" value="substitution" checked class="w-4 h-4 text-blue-500">
+              </div>
+              <p class="text-[11px] text-slate-400 leading-tight">
+                <b>Questions 1(a) to 1(d)</b> from textbook.
+              </p>
+              <div id="lobbySubProgressBadge" class="text-[10px] text-blue-400 font-code font-bold mt-2">
+                Station: Not started
+              </div>
+            </label>
+
+            <label class="relative flex flex-col p-3.5 bg-slate-950 border-2 border-emerald-500/50 rounded-2xl cursor-pointer hover:border-emerald-400 transition select-none">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-game font-black text-emerald-300 text-sm flex items-center gap-1.5">
+                  <i class="fa-solid fa-eraser"></i> Elimination Method
+                </span>
+                <input type="radio" name="practiceMode" value="elimination" class="w-4 h-4 text-emerald-500">
+              </div>
+              <p class="text-[11px] text-slate-400 leading-tight">
+                <b>Questions 2(a) to 2(d)</b> from textbook.
+              </p>
+              <div id="lobbyElimProgressBadge" class="text-[10px] text-emerald-400 font-code font-bold mt-2">
+                Station: Not started
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <button id="startChallengeBtn" class="w-full bg-gradient-to-r from-amber-500 via-rose-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-slate-950 font-black font-game text-base sm:text-lg py-3.5 rounded-2xl game-btn shadow-xl flex items-center justify-center gap-2 transition">
+          <i class="fa-solid fa-train"></i> Start Railroad Challenge
+        </button>
+
+        <button id="quickViewBoardBtn" class="w-full bg-slate-800 hover:bg-slate-700 text-indigo-300 border-2 border-indigo-500/40 hover:border-indigo-400 font-black font-game text-base sm:text-lg py-3.5 rounded-2xl game-btn shadow-xl flex items-center justify-center gap-2 transition">
+          <i class="fa-solid fa-tv"></i> Open Live Class Board
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-6 pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between text-xs text-slate-400 gap-2">
+      <span class="flex items-center gap-1.5 text-rose-300 font-bold">
+        <i class="fa-solid fa-rotate-left"></i> Redo until right (No spoilers on wrong answer)
+      </span>
+      <span class="text-amber-400 font-bold">
+        <i class="fa-solid fa-floppy-disk"></i> Class Progress Auto-Saves
+      </span>
+    </div>
+  </section>
+
+  <section id="fullBoardScreen" class="w-full max-w-7xl flex flex-col gap-4 hidden">
+    <!-- Board Sub-Header Control Bar -->
+    <div class="w-full flex flex-wrap items-center justify-between gap-3 bg-slate-900/90 border-2 border-slate-800 rounded-2xl p-4 shadow-xl">
+      <div class="flex items-center gap-3">
+        <span class="relative flex h-3.5 w-3.5">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
+        </span>
+        <div>
+          <h2 id="boardScreenTitle" class="font-game text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+            Classroom Railroad Board: <span id="boardClassDisplayBadge" class="text-amber-400 font-code underline">3W</span>
+          </h2>
+          <p class="text-xs text-slate-400">Live dual-track progress &bull; Side-by-side comparative views</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button id="boardToggleFullscreenBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow">
+          <i class="fa-solid fa-expand"></i> Fullscreen
+        </button>
+      </div>
+    </div>
+
+    <!-- DUAL COLUMNS: Substitution (Left) vs Elimination (Right) -->
+    <div class="w-full grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+      
+      <!-- LEFT COLUMN: SUBSTITUTION METHOD BOARD -->
+      <div class="bg-slate-900/95 border-2 border-blue-500/40 rounded-3xl p-5 shadow-2xl flex flex-col min-h-[520px]">
+        <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-black">
+              <i class="fa-solid fa-right-left"></i>
+            </div>
+            <div>
+              <h3 class="font-game text-base sm:text-lg font-black text-blue-400">
+                1. Substitution Method Board
+              </h3>
+              <p class="text-[11px] text-slate-400 font-code">Mind Test 9.1h &bull; Q1(a) to Q1(d)</p>
+            </div>
+          </div>
+          <span id="subStudentCountBadge" class="bg-blue-950 text-blue-300 border border-blue-700/50 text-xs font-code font-bold px-2.5 py-1 rounded-lg">
+            0 Students
+          </span>
+        </div>
+
+        <div id="subTracksContainer" class="space-y-3 max-h-[600px] overflow-y-auto pr-1.5 custom-scrollbar flex-grow">
+          <!-- Dynamic cards injected via JS -->
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: ELIMINATION METHOD BOARD -->
+      <div class="bg-slate-900/95 border-2 border-emerald-500/40 rounded-3xl p-5 shadow-2xl flex flex-col min-h-[520px]">
+        <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black">
+              <i class="fa-solid fa-eraser"></i>
+            </div>
+            <div>
+              <h3 class="font-game text-base sm:text-lg font-black text-emerald-400">
+                2. Elimination Method Board
+              </h3>
+              <p class="text-[11px] text-slate-400 font-code">Mind Test 9.1h &bull; Q2(a) to Q2(d)</p>
+            </div>
+          </div>
+          <span id="elimStudentCountBadge" class="bg-emerald-950 text-emerald-300 border border-emerald-700/50 text-xs font-code font-bold px-2.5 py-1 rounded-lg">
+            0 Students
+          </span>
+        </div>
+
+        <div id="elimTracksContainer" class="space-y-3 max-h-[600px] overflow-y-auto pr-1.5 custom-scrollbar flex-grow">
+          <!-- Dynamic cards injected via JS -->
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="gameScreen" class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-5 items-start hidden">
+    
+    <!-- LEFT COLUMN: Canvas Railroad Animation -->
+    <div class="lg:col-span-7 flex flex-col items-center bg-slate-900/90 border-2 border-slate-800 rounded-3xl p-3.5 sm:p-5 shadow-2xl relative overflow-hidden">
+      
+      <!-- Stage Header Bar -->
+      <div class="w-full flex items-center justify-between mb-2 px-2 text-xs font-bold">
+        <div class="flex items-center gap-2 text-blue-400 font-game">
+          <span class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></span>
+          Track 1: Blue Train
+        </div>
+        
+        <div class="bg-slate-950 border border-slate-700 px-3 py-1 rounded-full text-amber-300 font-code text-[11px] shadow">
+          Center Junction: (x, y)
+        </div>
+
+        <div class="flex items-center gap-2 text-rose-400 font-game">
+          Track 2: Red Train
+          <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
+        </div>
+      </div>
+
+      <!-- Crossing Railroad Track Canvas -->
+      <div class="relative w-full aspect-square max-w-[460px] bg-slate-950 rounded-2xl overflow-hidden border-4 border-slate-800 shadow-inner flex items-center justify-center">
+        <canvas id="railroadCanvas" width="500" height="500" class="w-full h-full object-contain block"></canvas>
+        
+        <div id="canvasToast" class="absolute bottom-4 px-4 py-2 rounded-xl text-xs sm:text-sm font-black font-game tracking-wider uppercase transition-all duration-300 opacity-0 transform translate-y-3 pointer-events-none z-20 shadow-2xl">
+          Crash Detected!
+        </div>
+      </div>
+
+      <div class="w-full grid grid-cols-2 gap-3 mt-3 px-1 text-xs">
+        <div class="bg-blue-950/40 border border-blue-800/40 rounded-xl p-2.5 flex items-center justify-between">
+          <div>
+            <div class="text-[10px] text-blue-400 font-bold uppercase tracking-wider">Line 1 Equation</div>
+            <div id="telemetryEq1" class="font-code font-bold text-blue-200">x = 3</div>
+          </div>
+          <i class="fa-solid fa-train text-blue-400 text-lg"></i>
+        </div>
+
+        <div class="bg-rose-950/40 border border-rose-800/40 rounded-xl p-2.5 flex items-center justify-between">
+          <div>
+            <div class="text-[10px] text-rose-400 font-bold uppercase tracking-wider">Line 2 Equation</div>
+            <div id="telemetryEq2" class="font-code font-bold text-rose-200">2x + y = 10</div>
+          </div>
+          <i class="fa-solid fa-train text-rose-400 text-lg"></i>
+        </div>
+      </div>
+
+      <!-- Live Attempt Tracker -->
+      <div class="w-full flex items-center justify-between mt-3 px-2 text-[11px] text-slate-400">
+        <span id="attemptTrackerBadge" class="flex items-center gap-1 text-amber-300 font-bold">
+          <i class="fa-solid fa-arrow-rotate-right"></i> Attempt: 1
+        </span>
+        <span id="liveStatusNotice" class="text-slate-400 italic">Select answer coordinates below</span>
+      </div>
+
+    </div>
+
+    <div class="lg:col-span-5 flex flex-col gap-3.5 w-full">
+
+      <!-- Question Card -->
+      <div class="bg-slate-900/90 border-2 border-slate-800 rounded-3xl p-5 shadow-2xl">
+        <div class="flex items-center justify-between mb-3">
+          <span id="badgeQuestionMode" class="bg-blue-500/20 text-blue-300 border border-blue-400/40 text-[11px] font-black uppercase px-2.5 py-1 rounded-lg tracking-wider">
+            1(a) Substitution Method
+          </span>
+          <span id="labelQuestionNumber" class="text-xs font-bold text-slate-400 font-code">
+            Question 1 / 4
+          </span>
+        </div>
+
+        <h3 class="text-sm sm:text-base font-bold text-slate-100 leading-snug mb-3">
+          Determine the point of intersection of the following pair of straight lines:
+        </h3>
+
+        <!-- The 2 Equations -->
+        <div class="space-y-2 mb-4">
+          <div class="bg-blue-500/10 border-l-4 border-blue-500 p-2.5 rounded-r-xl flex items-center justify-between">
+            <span class="text-xs text-blue-400 font-black tracking-wider">LINE [1]:</span>
+            <span id="displayEq1" class="font-code text-base sm:text-lg font-extrabold text-blue-200">x = 3</span>
+          </div>
+          <div class="bg-rose-500/10 border-l-4 border-rose-500 p-2.5 rounded-r-xl flex items-center justify-between">
+            <span class="text-xs text-rose-400 font-black tracking-wider">LINE [2]:</span>
+            <span id="displayEq2" class="font-code text-base sm:text-lg font-extrabold text-rose-200">2x + y = 10</span>
+          </div>
+        </div>
+
+        <!-- Wrong Feedback Banner -->
+        <div id="wrongFeedbackBanner" class="hidden bg-rose-950/70 border-2 border-rose-600/70 rounded-2xl p-3 mb-3 text-rose-200 text-xs flex items-start gap-2.5">
+          <i class="fa-solid fa-triangle-exclamation text-rose-400 text-base mt-0.5"></i>
+          <div>
+            <div class="font-black text-rose-300 uppercase tracking-wide">Incorrect Intersection!</div>
+            <p class="text-[11px] text-rose-200/90 leading-tight">
+              Trains failed to meet at this coordinate! Recalculate on your paper and select another option.
+            </p>
+          </div>
+        </div>
+
+        <!-- Four Coordinate Multiple Choice Buttons -->
+        <div id="answersGrid" class="grid grid-cols-2 gap-2.5">
+          <!-- Injected dynamically via JS -->
+        </div>
+
+        <!-- In-Card Clean Footer (No Duplicate Menu/Board Buttons) -->
+        <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-800 text-xs">
+          <button id="strategyHintToggleBtn" class="text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-lightbulb"></i> View Hint
+          </button>
+          
+          <span class="text-slate-500 text-[11px] font-medium flex items-center gap-1.5">
+            <i class="fa-solid fa-pencil text-slate-400"></i> Calculate on paper first
+          </span>
+        </div>
+      </div>
+
+      <div id="solutionCard" class="hidden bg-emerald-950/40 border-2 border-emerald-500/70 rounded-3xl p-4 sm:p-5 shadow-2xl transition-all duration-300">
+        <div class="flex items-center justify-between mb-2.5">
+          <span class="font-game font-bold text-emerald-400 text-base flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-emerald-400"></i>
+            <span>BOOM! Trains Collided on Target!</span>
+          </span>
+          <button id="nextQuestionActionBtn" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-game font-black text-xs sm:text-sm px-4 py-2 rounded-xl shadow-lg game-btn flex items-center gap-1.5">
+            Next Station <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+        <p class="text-[11px] text-emerald-300 font-semibold mb-2">
+          Step-by-step textbook working (Jalan Kerja):
+        </p>
+
+        <div id="solutionStepsContainer" class="bg-slate-950/90 border border-emerald-700/50 p-3 rounded-2xl text-xs space-y-1.5 font-code">
+          <!-- Injected via JavaScript -->
+        </div>
+      </div>
+
+      <!-- Strategy Hint Card -->
+      <div id="strategyHintCard" class="hidden bg-amber-950/40 border-2 border-amber-600/50 rounded-2xl p-3.5 text-xs text-amber-200/90 relative">
+        <button id="closeHintActionBtn" class="absolute top-2.5 right-2.5 text-amber-400 hover:text-white text-base">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="font-bold text-amber-400 flex items-center gap-2 mb-1">
+          <i class="fa-solid fa-compass"></i> Strategy Tip:
+        </div>
+        <p id="strategyHintBody" class="leading-relaxed text-[11px]">
+          Substitute one equation into the other or eliminate by matching coefficients!
+        </p>
+      </div>
+
+    </div>
+
+  </section>
+
+  <div id="victoryModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-slate-900 border-2 border-slate-700 rounded-3xl p-6 sm:p-8 max-w-md w-full text-center shadow-2xl">
+      <div class="w-20 h-20 mx-auto rounded-2xl flex items-center justify-center text-4xl mb-4 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-xl">
+        <i class="fa-solid fa-trophy text-amber-400 animate-bounce"></i>
+      </div>
+      <h3 class="text-2xl sm:text-3xl font-black font-game mb-2 text-white">Grand Terminal Reached!</h3>
+      <p id="victoryModalMessage" class="text-xs sm:text-sm text-slate-300 mb-6 leading-relaxed">
+        Awesome work! You solved all linear equations in this mode and caused exact intersections at every train crossing!
+      </p>
+
+      <div class="bg-slate-800 rounded-2xl p-4 mb-6 grid grid-cols-2 gap-4">
+        <div>
+          <div class="text-[10px] text-slate-400 font-bold uppercase">Final Score</div>
+          <div id="finalScoreDisplay" class="font-game text-2xl font-bold text-amber-400">0</div>
+        </div>
+        <div>
+          <div class="text-[10px] text-slate-400 font-bold uppercase">Total Retries</div>
+          <div id="finalAttemptsDisplay" class="font-game text-2xl font-bold text-rose-400">0</div>
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <button id="modalReturnLobbyBtn" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-game font-bold text-xs sm:text-sm py-3 rounded-xl transition">
+          Return to Menu
+        </button>
+        <button id="modalOpenBoardBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-game font-bold text-xs sm:text-sm py-3 rounded-xl transition">
+          View Class Board
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLOUD CONFIGURATION MODAL (FOR OPTIONAL FIREBASE SETUP ON GITHUB) -->
+  <div id="cloudConfigModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-slate-900 border-2 border-slate-700 rounded-3xl p-6 sm:p-7 max-w-lg w-full shadow-2xl">
+      <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2 text-emerald-400 font-bold font-game text-base">
+          <i class="fa-solid fa-satellite-dish"></i> Cloud Multi-Laptop Sync
+        </div>
+        <button id="closeCloudConfigBtn" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-300 mb-3 leading-relaxed">
+        <b>Live Internet Sync is ALREADY ACTIVE!</b> Any student opening this link on another laptop with the same Class Code will immediately sync in real-time over our secure cloud relay.
+      </p>
+
+      <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl text-[11px] space-y-1.5 text-slate-400 mb-4 font-code">
+        <div>• <b>Relay Server:</b> <span class="text-emerald-400">broker.hivemq.com (WSS / SSL)</span></div>
+        <div>• <b>Multi-Laptop Status:</b> <span id="modalRelayStatus" class="text-emerald-400 font-bold">Connected & Listening</span></div>
+      </div>
+
+      <div class="text-[11px] text-slate-400 mb-2 font-bold uppercase tracking-wider">
+        Optional: Custom Google Firebase Configuration (for multi-week permanent saving)
+      </div>
+      <textarea id="customFirebaseInput" rows="4" placeholder='{"apiKey": "...", "authDomain": "...", "projectId": "..."}' class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-[11px] font-code text-slate-200 focus:outline-none focus:border-amber-400 mb-3"></textarea>
+
+      <div id="cloudConfigNotice" class="hidden p-2 rounded-lg text-xs mb-3"></div>
+
+      <div class="flex gap-2">
+        <button id="saveCustomFirebaseBtn" class="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold font-game text-xs py-2.5 rounded-xl transition">
+          Save Firebase Config
+        </button>
+        <button id="dismissCloudConfigBtn" class="px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs py-2.5 rounded-xl transition">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Alert Toast Banner (Replacing browser alerts) -->
+  <div id="appToast" class="fixed top-5 left-1/2 transform -translate-x-1/2 bg-rose-600 text-white font-game text-sm px-5 py-3 rounded-2xl shadow-2xl z-50 hidden transition-all duration-300">
+    <span id="appToastText">Notification</span>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'railroad-math-game';
+    let db = null;
+    let auth = null;
+    const cloudClassCache = {};
+    const cloudSyncText = document.getElementById('cloudSyncText');
+
+    function showAppToast(msg, bgClass = 'bg-rose-600 text-white') {
+      const toast = document.getElementById('appToast');
+      const toastText = document.getElementById('appToastText');
+      toast.className = `fixed top-5 left-1/2 transform -translate-x-1/2 font-game text-sm px-5 py-3 rounded-2xl shadow-2xl z-50 transition-all duration-300 ${bgClass}`;
+      toastText.innerText = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3500);
+    }
+
+    class RailroadAudio {
+      constructor() {
+        this.ctx = null;
+        this.isMuted = false;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playWhistle() {
+        if (this.isMuted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const o1 = this.ctx.createOscillator();
+        const o2 = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o1.type = 'sawtooth';
+        o2.type = 'sawtooth';
+        o1.frequency.setValueAtTime(440, now);
+        o2.frequency.setValueAtTime(554.37, now);
+        g.gain.setValueAtTime(0.01, now);
+        g.gain.linearRampToValueAtTime(0.18, now + 0.1);
+        g.gain.linearRampToValueAtTime(0.15, now + 0.35);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+        o1.connect(g);
+        o2.connect(g);
+        g.connect(this.ctx.destination);
+        o1.start(now);
+        o2.start(now);
+        o1.stop(now + 0.7);
+        o2.stop(now + 0.7);
+      }
+      playChug() {
+        if (this.isMuted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const bSize = this.ctx.sampleRate * 0.08;
+        const buf = this.ctx.createBuffer(1, bSize, this.ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < bSize; i++) data[i] = Math.random() * 2 - 1;
+        const src = this.ctx.createBufferSource();
+        src.buffer = buf;
+        const f = this.ctx.createBiquadFilter();
+        f.type = 'bandpass';
+        f.frequency.setValueAtTime(320, now);
+        f.Q.setValueAtTime(3, now);
+        const g = this.ctx.createGain();
+        g.gain.setValueAtTime(0.12, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        src.connect(f);
+        f.connect(g);
+        g.connect(this.ctx.destination);
+        src.start(now);
+      }
+      playCrash() {
+        if (this.isMuted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const bSize = this.ctx.sampleRate * 1.1;
+        const buf = this.ctx.createBuffer(1, bSize, this.ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < bSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (this.ctx.sampleRate * 0.35));
+        const src = this.ctx.createBufferSource();
+        src.buffer = buf;
+        const f = this.ctx.createBiquadFilter();
+        f.type = 'lowpass';
+        f.frequency.setValueAtTime(1000, now);
+        f.frequency.exponentialRampToValueAtTime(60, now + 1.0);
+        const g = this.ctx.createGain();
+        g.gain.setValueAtTime(0.8, now);
+        g.gain.exponentialRampToValueAtTime(0.005, now + 1.1);
+        src.connect(f);
+        f.connect(g);
+        g.connect(this.ctx.destination);
+        src.start(now);
+      }
+      playBrake() {
+        if (this.isMuted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(1200, now);
+        osc.frequency.linearRampToValueAtTime(400, now + 0.45);
+        g.gain.setValueAtTime(0.12, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+        osc.connect(g);
+        g.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.45);
+      }
+    }
+
+    const sound = new RailroadAudio();
+
+    let mqttClient = null;
+    let mqttConnected = false;
+    let currentMqttTopic = null;
+
+    function initInternetRelay(classCode) {
+      if (!window.Paho || !window.Paho.MQTT) {
+        console.warn("Paho MQTT library not loaded");
+        return;
+      }
+      if (!classCode) return;
+
+      const code = classCode.toUpperCase().trim();
+      const sanitizedCode = code.replace(/[^a-zA-Z0-9]/g, '_');
+      const targetTopic = `kssm_math_rr_916/${sanitizedCode}`;
+
+      if (mqttClient && mqttConnected && currentMqttTopic === targetTopic) {
+        return;
+      }
+
+      if (mqttClient && mqttConnected) {
+        try { mqttClient.disconnect(); } catch (e) {}
+      }
+
+      const clientId = `rr_student_${Math.random().toString(16).substring(2, 10)}`;
+      mqttClient = new Paho.MQTT.Client("broker.hivemq.com", 8884, "/mqtt", clientId);
+
+      mqttClient.onConnectionLost = () => {
+        mqttConnected = false;
+        if (cloudSyncText) cloudSyncText.innerText = "Reconnecting to Live Relay...";
+        setTimeout(() => initInternetRelay(classCode), 3000);
+      };
+
+      mqttClient.onMessageArrived = (message) => {
+        try {
+          const payload = JSON.parse(message.payloadString);
+          handleIncomingNetworkMessage(payload);
+        } catch (e) {
+          console.warn("Incoming payload error:", e);
+        }
+      };
+
+      mqttClient.connect({
+        useSSL: true,
+        timeout: 8,
+        keepAliveInterval: 30,
+        onSuccess: () => {
+          mqttConnected = true;
+          currentMqttTopic = targetTopic;
+          mqttClient.subscribe(targetTopic);
+          if (cloudSyncText) cloudSyncText.innerText = `Internet Live: ${code}`;
+          
+          broadcastNetworkMessage({
+            type: 'REQUEST_ROOM_SYNC',
+            classCode: code
+          });
+        },
+        onFailure: () => {
+          mqttConnected = false;
+          if (cloudSyncText) cloudSyncText.innerText = "Local Multi-Tab Active";
+        }
+      });
+    }
+
+    function broadcastNetworkMessage(data) {
+      if (!mqttClient || !mqttConnected || !currentMqttTopic) return;
+      try {
+        const message = new Paho.MQTT.Message(JSON.stringify(data));
+        message.destinationName = currentMqttTopic;
+        mqttClient.send(message);
+      } catch (e) {
+        console.warn("Broadcast warning:", e);
+      }
+    }
+
+    function handleIncomingNetworkMessage(data) {
+      if (!data || !data.classCode) return;
+      const code = data.classCode.toUpperCase().trim();
+
+      if (data.type === 'STUDENT_UPDATE') {
+        const student = data.studentData;
+        if (!student || !student.name) return;
+        const studentKey = student.name.toLowerCase().trim();
+
+        if (!cloudClassCache[code]) cloudClassCache[code] = {};
+        cloudClassCache[code][studentKey] = student;
+
+        const records = loadClassRecords(code);
+        records[studentKey] = student;
+        try { localStorage.setItem(getClassStoreKey(code), JSON.stringify(records)); } catch (e) {}
+
+        renderFullscreenBoards();
+      } else if (data.type === 'REQUEST_ROOM_SYNC') {
+        if (currentStudent.name && currentStudent.classCode === code) {
+          const records = loadClassRecords(code);
+          const studentKey = currentStudent.name.toLowerCase().trim();
+          const myData = records[studentKey];
+          if (myData) {
+            broadcastNetworkMessage({
+              type: 'STUDENT_UPDATE',
+              classCode: code,
+              studentData: myData
+            });
+          }
+        }
+      }
+    }
+
+    const storedFbConfig = localStorage.getItem('railroad_custom_firebase_config');
+    const effectiveFbConfig = (typeof __firebase_config !== 'undefined' && __firebase_config) 
+      ? __firebase_config 
+      : (storedFbConfig || null);
+
+    if (effectiveFbConfig) {
+      try {
+        const firebaseConfig = typeof effectiveFbConfig === 'string' ? JSON.parse(effectiveFbConfig) : effectiveFbConfig;
+        const app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+
+        const initAuth = async () => {
+          try {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+              await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+              await signInAnonymously(auth);
+            }
+            if (auth.currentUser && cloudSyncText) {
+              cloudSyncText.innerText = "Firebase Cloud & Relay Connected";
+            }
+          } catch (authErr) {
+            console.warn("Firebase Auth Notice:", authErr);
+          }
+        };
+        initAuth();
+      } catch (e) {
+        console.warn("Firebase Config Notice:", e);
+      }
+    }
+
+    const TEXTBOOK_QUESTIONS = {
+      substitution: [
+        {
+          id: '1a',
+          method: 'Substitution Method',
+          label: 'Question 1(a) [Substitution]',
+          eq1: 'x = 3',
+          eq2: '2x + y = 10',
+          correct: '(3, 4)',
+          options: ['(3, 4)', '(3, 7)', '(4, 3)', '(3, -4)'],
+          hint: 'Since x is already known as 3, replace x with 3 in 2x + y = 10 and solve for y!',
+          steps: [
+            '<b>Step 1:</b> Given: <code>x = 3</code> [Eq 1] and <code>2x + y = 10</code> [Eq 2].',
+            '<b>Step 2:</b> Substitute <code>x = 3</code> into [Eq 2]:<br><code>2(3) + y = 10 → 6 + y = 10</code>.',
+            '<b>Step 3:</b> Solve for y: <code>y = 10 - 6 = 4</code>.',
+            '<b>Intersection Point:</b> <code>(3, 4)</code>.'
+          ]
+        },
+        {
+          id: '1b',
+          method: 'Substitution Method',
+          label: 'Question 1(b) [Substitution]',
+          eq1: 'y = 4',
+          eq2: '3x - 2y = 7',
+          correct: '(5, 4)',
+          options: ['(5, 4)', '(4, 5)', '(1, 4)', '(5, -4)'],
+          hint: 'Since y = 4 is given directly, substitute 4 in place of y in 3x - 2y = 7, then isolate x!',
+          steps: [
+            '<b>Step 1:</b> Given: <code>y = 4</code> [Eq 1] and <code>3x - 2y = 7</code> [Eq 2].',
+            '<b>Step 2:</b> Substitute <code>y = 4</code> into [Eq 2]:<br><code>3x - 2(4) = 7 → 3x - 8 = 7</code>.',
+            '<b>Step 3:</b> Solve for x: <code>3x = 7 + 8 → 3x = 15 → x = 5</code>.',
+            '<b>Intersection Point:</b> <code>(5, 4)</code>.'
+          ]
+        },
+        {
+          id: '1c',
+          method: 'Substitution Method',
+          label: 'Question 1(c) [Substitution]',
+          eq1: 'x + y = 5',
+          eq2: '2x - y = 4',
+          correct: '(3, 2)',
+          options: ['(3, 2)', '(2, 3)', '(4, 1)', '(1, 4)'],
+          hint: 'From Equation [1], express x in terms of y: x = 5 - y. Then substitute into Equation [2]!',
+          steps: [
+            '<b>Step 1:</b> From <code>x + y = 5</code> [Eq 1], express x: <code>x = 5 - y</code> [Eq 3].',
+            '<b>Step 2:</b> Substitute [Eq 3] into <code>2x - y = 4</code> [Eq 2]:<br><code>2(5 - y) - y = 4 → 10 - 2y - y = 4 → 10 - 3y = 4</code>.',
+            '<b>Step 3:</b> Solve for y: <code>-3y = 4 - 10 → -3y = -6 → y = 2</code>.',
+            '<b>Step 4:</b> Substitute <code>y = 2</code> into [Eq 3]: <code>x = 5 - 2 = 3</code>.',
+            '<b>Intersection Point:</b> <code>(3, 2)</code>.'
+          ]
+        },
+        {
+          id: '1d',
+          method: 'Substitution Method',
+          label: 'Question 1(d) [Substitution]',
+          eq1: '2x + y = 3',
+          eq2: '3x - 2y = 8',
+          correct: '(2, -1)',
+          options: ['(2, -1)', '(1, 1)', '(3, -3)', '(-2, 1)'],
+          hint: 'From Equation [1], express y as y = 3 - 2x. Substitute this into 3x - 2y = 8!',
+          steps: [
+            '<b>Step 1:</b> From <code>2x + y = 3</code> [Eq 1], make y the subject: <code>y = 3 - 2x</code> [Eq 3].',
+            '<b>Step 2:</b> Substitute [Eq 3] into <code>3x - 2y = 8</code> [Eq 2]:<br><code>3x - 2(3 - 2x) = 8 → 3x - 6 + 4x = 8 → 7x - 6 = 8</code>.',
+            '<b>Step 3:</b> Solve for x: <code>7x = 14 → x = 2</code>.',
+            '<b>Step 4:</b> Substitute <code>x = 2</code> into [Eq 3]: <code>y = 3 - 2(2) = 3 - 4 = -1</code>.',
+            '<b>Intersection Point:</b> <code>(2, -1)</code>.'
+          ]
+        }
+      ],
+
+      elimination: [
+        {
+          id: '2a',
+          method: 'Elimination Method',
+          label: 'Question 2(a) [Elimination]',
+          eq1: 'x + y = 1',
+          eq2: '2x + y = -1',
+          correct: '(-2, 3)',
+          options: ['(-2, 3)', '(2, -1)', '(-1, 2)', '(0, 1)'],
+          hint: 'Both equations have +y! Subtract Equation [1] from Equation [2] to eliminate y directly.',
+          steps: [
+            '<b>Step 1:</b> Compare coefficients: both have <code>+1y</code>. Subtract [Eq 1] from [Eq 2]:<br><code>(2x + y) - (x + y) = -1 - 1</code>.',
+            '<b>Step 2:</b> Eliminate y: <code>x = -2</code>.',
+            '<b>Step 3:</b> Substitute <code>x = -2</code> into [Eq 1]:<br><code>-2 + y = 1 → y = 1 + 2 = 3</code>.',
+            '<b>Intersection Point:</b> <code>(-2, 3)</code>.'
+          ]
+        },
+        {
+          id: '2b',
+          method: 'Elimination Method',
+          label: 'Question 2(b) [Elimination]',
+          eq1: 'x - y = -4',
+          eq2: '3x + y = 4',
+          correct: '(0, 4)',
+          options: ['(0, 4)', '(4, 0)', '(1, 5)', '(-2, 2)'],
+          hint: 'The coefficients of y are -y and +y (opposite signs!). Add both equations together to eliminate y immediately.',
+          steps: [
+            '<b>Step 1:</b> Observe opposite signs: <code>-y</code> in [Eq 1] and <code>+y</code> in [Eq 2].',
+            '<b>Step 2:</b> Add [Eq 1] + [Eq 2]:<br><code>(x - y) + (3x + y) = -4 + 4 → 4x = 0 → x = 0</code>.',
+            '<b>Step 3:</b> Substitute <code>x = 0</code> into [Eq 2]:<br><code>3(0) + y = 4 → y = 4</code>.',
+            '<b>Intersection Point:</b> <code>(0, 4)</code>.'
+          ]
+        },
+        {
+          id: '2c',
+          method: 'Elimination Method',
+          label: 'Question 2(c) [Elimination]',
+          eq1: 'x - y = -5',
+          eq2: '2x + 3y = -10',
+          correct: '(-5, 0)',
+          options: ['(-5, 0)', '(0, -5)', '(-2, 3)', '(-1, 4)'],
+          hint: 'Multiply Equation [1] by 3 to get -3y, which cancels with +3y in Equation [2] when added together!',
+          steps: [
+            '<b>Step 1:</b> Multiply [Eq 1] by 3 to match y coefficients:<br><code>3(x - y) = 3(-5) → 3x - 3y = -15</code> [Eq 3].',
+            '<b>Step 2:</b> Add [Eq 3] + [Eq 2]:<br><code>(3x - 3y) + (2x + 3y) = -15 + (-10) → 5x = -25 → x = -5</code>.',
+            '<b>Step 3:</b> Substitute <code>x = -5</code> into [Eq 1]:<br><code>-5 - y = -5 → -y = 0 → y = 0</code>.',
+            '<b>Intersection Point:</b> <code>(-5, 0)</code>.'
+          ]
+        },
+        {
+          id: '2d',
+          method: 'Elimination Method',
+          label: 'Question 2(d) [Elimination]',
+          eq1: '2x - 3y = 5',
+          eq2: '3x + 2y = 14',
+          correct: '(4, 1)',
+          options: ['(4, 1)', '(1, 4)', '(2, 4)', '(5, 0)'],
+          hint: 'Scale both! Multiply Equation [1] by 2 to get -6y, and Equation [2] by 3 to get +6y. Then add them!',
+          steps: [
+            '<b>Step 1:</b> Scale both equations to match y:<br>[Eq 1] × 2: <code>4x - 6y = 10</code> [Eq 3]<br>[Eq 2] × 3: <code>9x + 6y = 42</code> [Eq 4].',
+            '<b>Step 2:</b> Add [Eq 3] + [Eq 4] to eliminate y:<br><code>(4x - 6y) + (9x + 6y) = 10 + 42 → 13x = 52 → x = 4</code>.',
+            '<b>Step 3:</b> Substitute <code>x = 4</code> into [Eq 2]:<br><code>3(4) + 2y = 14 → 12 + 2y = 14 → 2y = 2 → y = 1</code>.',
+            '<b>Intersection Point:</b> <code>(4, 1)</code>.'
+          ]
+        }
+      ]
+    };
+
+    let currentStudent = {
+      name: '',
+      classCode: '',
+      mode: 'substitution',
+      questionIdx: 0,
+      attemptsOnCurrent: 0,
+      totalRetries: 0,
+      score: 0,
+      completed: false
+    };
+
+    let activeQuestions = [];
+    let currentQ = null;
+    let isQuestionLocked = false;
+
+    const channel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('railroad_classroom_v3_hub') : null;
+
+    function getClassStoreKey(classCode) {
+      return `railroad_v3_class_${classCode.toUpperCase().trim()}`;
+    }
+
+    function loadClassRecords(classCode) {
+      if (!classCode) return {};
+      const code = classCode.toUpperCase().trim();
+      let localRecords = {};
+      try {
+        const raw = localStorage.getItem(getClassStoreKey(code));
+        localRecords = raw ? JSON.parse(raw) : {};
+      } catch (e) {}
+
+      const cloudRecords = cloudClassCache[code] || {};
+      const merged = { ...localRecords };
+
+      for (const [key, val] of Object.entries(cloudRecords)) {
+        if (!merged[key] || (val.lastUpdated && val.lastUpdated > (merged[key].lastUpdated || 0))) {
+          merged[key] = val;
+        }
+      }
+      return merged;
+    }
+
+    async function saveStudentProgressPermanently() {
+      if (!currentStudent.classCode || !currentStudent.name) return;
+      const code = currentStudent.classCode.toUpperCase().trim();
+      const records = loadClassRecords(code);
+      const studentKey = currentStudent.name.toLowerCase().trim();
+
+      const existing = records[studentKey] || {
+        name: currentStudent.name,
+        classCode: code,
+        studentKey: studentKey,
+        substitution: { questionIdx: 0, completed: false, score: 0, retries: 0 },
+        elimination: { questionIdx: 0, completed: false, score: 0, retries: 0 },
+        lastUpdated: Date.now()
+      };
+
+      if (currentStudent.mode === 'substitution') {
+        existing.substitution = {
+          questionIdx: currentStudent.questionIdx,
+          completed: currentStudent.completed,
+          score: currentStudent.score,
+          retries: currentStudent.totalRetries
+        };
+      } else if (currentStudent.mode === 'elimination') {
+        existing.elimination = {
+          questionIdx: currentStudent.questionIdx,
+          completed: currentStudent.completed,
+          score: currentStudent.score,
+          retries: currentStudent.totalRetries
+        };
+      }
+
+      existing.name = currentStudent.name;
+      existing.classCode = code;
+      existing.studentKey = studentKey;
+      existing.lastUpdated = Date.now();
+
+      records[studentKey] = existing;
+
+      try {
+        localStorage.setItem(getClassStoreKey(code), JSON.stringify(records));
+      } catch (e) {}
+
+      if (channel) {
+        channel.postMessage({ type: 'CLASS_SYNC', classCode: code });
+      }
+
+      broadcastNetworkMessage({
+        type: 'STUDENT_UPDATE',
+        classCode: code,
+        studentData: existing
+      });
+
+      if (db && auth && auth.currentUser) {
+        try {
+          const docId = `${code}_${studentKey}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+          const studentDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'railroad_students', docId);
+          await setDoc(studentDocRef, existing, { merge: true });
+        } catch (cloudErr) {
+          console.warn("Cloud setDoc warning:", cloudErr);
+        }
+      }
+
+      renderFullscreenBoards();
+    }
+
+    function renderFullscreenBoards() {
+      const code = (currentStudent.classCode || document.getElementById('classCodeInput').value).toUpperCase().trim();
+      const subContainer = document.getElementById('subTracksContainer');
+      const elimContainer = document.getElementById('elimTracksContainer');
+      const subBadge = document.getElementById('subStudentCountBadge');
+      const elimBadge = document.getElementById('elimStudentCountBadge');
+      const classDisplay = document.getElementById('boardClassDisplayBadge');
+
+      if (!code) {
+        classDisplay.innerText = '[Enter Class Code]';
+        const emptyMsg = `
+          <div class="text-center py-16 px-4 border-2 border-dashed border-slate-800 rounded-2xl text-slate-500 text-xs sm:text-sm">
+            <i class="fa-solid fa-graduation-cap text-3xl mb-2 text-slate-600 block"></i>
+            Please enter your <strong>Class Code</strong> in the lobby.<br>
+            Only students registered in that exact class will appear on this board.
+          </div>
+        `;
+        subContainer.innerHTML = emptyMsg;
+        elimContainer.innerHTML = emptyMsg;
+        subBadge.innerText = '0 Students';
+        elimBadge.innerText = '0 Students';
+        return;
+      }
+
+      classDisplay.innerText = code;
+      const records = loadClassRecords(code);
+      const studentList = Object.values(records);
+
+      const subStudents = studentList.filter(s => s.substitution && (s.substitution.questionIdx > 0 || s.substitution.completed || s.substitution.score > 0));
+      const elimStudents = studentList.filter(s => s.elimination && (s.elimination.questionIdx > 0 || s.elimination.completed || s.elimination.score > 0));
+
+      subBadge.innerText = `${subStudents.length} Student${subStudents.length === 1 ? '' : 's'}`;
+      elimBadge.innerText = `${elimStudents.length} Student${elimStudents.length === 1 ? '' : 's'}`;
+
+      subContainer.innerHTML = renderTrackCardsForMode(subStudents, 'substitution', 4);
+      elimContainer.innerHTML = renderTrackCardsForMode(elimStudents, 'elimination', 4);
+    }
+
+    function renderTrackCardsForMode(students, modeKey, totalStations) {
+      if (students.length === 0) {
+        return `
+          <div class="text-center py-16 px-4 border-2 border-dashed border-slate-800 rounded-2xl text-slate-400 text-xs sm:text-sm">
+            <i class="fa-solid fa-train text-2xl mb-2 text-slate-600 block"></i>
+            No students have started the <b>${modeKey === 'substitution' ? 'Substitution' : 'Elimination'}</b> track yet.<br>
+            Complete question 1 to place your train on this line!
+          </div>
+        `;
+      }
+
+      return students.map(s => {
+        const isMe = currentStudent.name && (s.name.toLowerCase() === currentStudent.name.toLowerCase());
+        const data = s[modeKey] || { questionIdx: 0, completed: false, score: 0 };
+        const currentProgress = data.completed ? totalStations : data.questionIdx;
+        const percent = Math.min(100, Math.round((currentProgress / totalStations) * 100));
+
+        return `
+          <div class="p-3.5 rounded-2xl border transition ${isMe ? 'bg-slate-900 border-amber-500/70 shadow-lg shadow-amber-500/10' : 'bg-slate-950 border-slate-800'}">
+            <div class="flex items-center justify-between text-xs mb-1.5">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-slate-200 ${isMe ? 'text-amber-300' : ''}">
+                  ${s.name} ${isMe ? '<span class="text-[9px] bg-amber-400/20 text-amber-300 px-1.5 py-0.5 rounded font-bold ml-1">YOU</span>' : ''}
+                </span>
+                <span class="text-[9px] font-code bg-slate-900 border border-slate-700 px-1.5 py-0.5 rounded text-slate-400">
+                  Pts: ${data.score || 0}
+                </span>
+              </div>
+              <div class="font-code font-bold text-[11px] ${data.completed ? 'text-emerald-400' : 'text-amber-400'}">
+                ${data.completed ? '🏆 GRAND TERMINAL (4/4 • 100%)' : `Station ${data.questionIdx + 1} of ${totalStations} (${data.questionIdx}/${totalStations} Cleared • ${percent}%)`}
+              </div>
+            </div>
+
+            <div class="relative w-full h-8 train-track-stripes rounded-lg border-y-2 border-slate-600 flex items-center px-1 overflow-hidden">
+              <div class="absolute transition-all duration-700 ease-out flex items-center gap-1" style="left: calc(${Math.max(2, Math.min(92, percent))}% - 14px);">
+                <div class="text-base transform ${isMe ? 'text-amber-400 filter drop-shadow(0 0 5px #f59e0b)' : (modeKey === 'substitution' ? 'text-blue-400' : 'text-emerald-400')}">
+                  <i class="fa-solid fa-train"></i>
+                </div>
+              </div>
+
+              <div class="absolute right-2 text-xs text-rose-400">
+                <i class="fa-solid fa-flag-checkered"></i>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    const canvas = document.getElementById('railroadCanvas');
+    const ctx = canvas.getContext('2d');
+    const CENTER_X = 250;
+    const CENTER_Y = 250;
+    const TRACK_LENGTH = 580;
+
+    let trainState = 'idle';
+    let animProgress = 0;
+    let particles = [];
+    let shockwaveRadius = 0;
+    let chugSoundTicks = 0;
+
+    function drawCrossingRailroad() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.save();
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < canvas.width; x += 25) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += 25) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+      }
+      ctx.restore();
+
+      const drawTrackPath = (angle) => {
+        ctx.save();
+        ctx.translate(CENTER_X, CENTER_Y);
+        ctx.rotate(angle);
+
+        const trackHalfWidth = 20;
+        const sleeperSpacing = 16;
+        const sleeperLength = 54;
+        const sleeperWidth = 8;
+
+        ctx.fillStyle = '#090d16';
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 1.5;
+
+        for (let pos = -TRACK_LENGTH / 2; pos <= TRACK_LENGTH / 2; pos += sleeperSpacing) {
+          if (Math.abs(pos) > 28) {
+            ctx.fillRect(pos - sleeperWidth / 2, -sleeperLength / 2, sleeperWidth, sleeperLength);
+            ctx.strokeRect(pos - sleeperWidth / 2, -sleeperLength / 2, sleeperWidth, sleeperLength);
+          }
+        }
+
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 4.5;
+        ctx.lineCap = 'round';
+
+        ctx.beginPath();
+        ctx.moveTo(-TRACK_LENGTH / 2, -trackHalfWidth);
+        ctx.lineTo(-24, -trackHalfWidth);
+        ctx.moveTo(24, -trackHalfWidth);
+        ctx.lineTo(TRACK_LENGTH / 2, -trackHalfWidth);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(-TRACK_LENGTH / 2, trackHalfWidth);
+        ctx.lineTo(-24, trackHalfWidth);
+        ctx.moveTo(24, trackHalfWidth);
+        ctx.lineTo(TRACK_LENGTH / 2, trackHalfWidth);
+        ctx.stroke();
+
+        ctx.restore();
+      };
+
+      drawTrackPath(Math.PI / 4);
+      drawTrackPath(-Math.PI / 4);
+
+      // Central Diamond Bolted Plate
+      ctx.save();
+      ctx.translate(CENTER_X, CENTER_Y);
+      ctx.rotate(Math.PI / 4);
+
+      ctx.fillStyle = '#0f172a';
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 3.5;
+      const plateSize = 58;
+      ctx.fillRect(-plateSize / 2, -plateSize / 2, plateSize, plateSize);
+      ctx.strokeRect(-plateSize / 2, -plateSize / 2, plateSize, plateSize);
+
+      ctx.fillStyle = '#020617';
+      const innerSize = 22;
+      ctx.fillRect(-innerSize / 2, -innerSize / 2, innerSize, innerSize);
+      ctx.strokeRect(-innerSize / 2, -innerSize / 2, innerSize, innerSize);
+
+      const boltDist = 20;
+      [
+        [-boltDist, -boltDist],
+        [boltDist, -boltDist],
+        [-boltDist, boltDist],
+        [boltDist, boltDist]
+      ].forEach(([bx, by]) => {
+        ctx.fillStyle = '#f8fafc';
+        ctx.beginPath();
+        ctx.arc(bx, by, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+
+      ctx.restore();
+    }
+
+    function drawTrain(x, y, angle, colorType, isSmoking = false) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+
+      const length = 52;
+      const width = 28;
+
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+      ctx.beginPath();
+      ctx.roundRect(-length / 2 + 3, -width / 2 + 4, length, width, 8);
+      ctx.fill();
+
+      const grad = ctx.createLinearGradient(-length / 2, -width / 2, length / 2, width / 2);
+      if (colorType === 'blue') {
+        grad.addColorStop(0, '#3b82f6');
+        grad.addColorStop(1, '#1d4ed8');
+      } else {
+        grad.addColorStop(0, '#f43f5e');
+        grad.addColorStop(1, '#be123c');
+      }
+
+      ctx.fillStyle = grad;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.roundRect(-length / 2, -width / 2, length, width, [12, 4, 4, 12]);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#fef08a';
+      ctx.beginPath();
+      ctx.roundRect(length / 2 - 13, -width / 2 + 4, 9, width - 8, 3);
+      ctx.fill();
+
+      ctx.fillStyle = colorType === 'blue' ? '#93c5fd' : '#fda4af';
+      ctx.fillRect(-length / 2 + 8, -2.5, length - 24, 5);
+
+      if (isSmoking && Math.random() < 0.45) {
+        particles.push({
+          x: x - Math.cos(angle) * 26,
+          y: y - Math.sin(angle) * 26,
+          vx: (Math.random() - 0.5) * 0.8,
+          vy: -Math.random() * 1.5 - 0.4,
+          size: Math.random() * 6 + 4,
+          alpha: 0.75,
+          color: '#cbd5e1'
+        });
+      }
+
+      ctx.restore();
+    }
+
+    function createCrashExplosion(x, y) {
+      const colors = ['#f59e0b', '#ef4444', '#facc15', '#ffffff', '#3b82f6', '#fbbf24'];
+      for (let i = 0; i < 95; i++) {
+        const speed = Math.random() * 8.5 + 2;
+        const angle = Math.random() * Math.PI * 2;
+        particles.push({
+          x: x,
+          y: y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          size: Math.random() * 9 + 4,
+          alpha: 1,
+          decay: Math.random() * 0.02 + 0.015,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          isDebris: Math.random() < 0.45,
+          rotation: Math.random() * Math.PI,
+          vRot: (Math.random() - 0.5) * 0.3
+        });
+      }
+    }
+
+    function updateAndRenderParticles() {
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.07;
+        p.alpha -= p.decay || 0.028;
+
+        if (p.isDebris) {
+          p.rotation += p.vRot;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rotation);
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = Math.max(0, p.alpha);
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 1.4);
+          ctx.restore();
+        } else {
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, p.alpha);
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        if (p.alpha <= 0) {
+          particles.splice(i, 1);
+        }
+      }
+    }
+
+    function triggerScreenShakeEffect() {
+      const container = document.getElementById('gameScreen');
+      container.classList.remove('screen-shake');
+      void container.offsetWidth;
+      container.classList.add('screen-shake');
+      setTimeout(() => container.classList.remove('screen-shake'), 500);
+    }
+
+    function showCanvasToast(msg, bgClass) {
+      const toast = document.getElementById('canvasToast');
+      toast.className = `absolute bottom-4 px-4 py-2 rounded-xl text-xs sm:text-sm font-black font-game tracking-wider uppercase transition-all duration-300 opacity-100 transform translate-y-0 z-20 shadow-2xl ${bgClass}`;
+      toast.innerText = msg;
+    }
+
+    function hideCanvasToast() {
+      const toast = document.getElementById('canvasToast');
+      toast.classList.replace('opacity-100', 'opacity-0');
+    }
+
+    function mainAnimationLoop() {
+      drawCrossingRailroad();
+
+      const cos45 = Math.cos(Math.PI / 4);
+      const sin45 = Math.sin(Math.PI / 4);
+      const startDist = 225;
+
+      if (trainState === 'idle') {
+        const t1X = CENTER_X - cos45 * startDist;
+        const t1Y = CENTER_Y - sin45 * startDist;
+        drawTrain(t1X, t1Y, Math.PI / 4, 'blue');
+
+        const t2X = CENTER_X - cos45 * startDist;
+        const t2Y = CENTER_Y + sin45 * startDist;
+        drawTrain(t2X, t2Y, -Math.PI / 4, 'red');
+
+      } else if (trainState === 'running_to_crash') {
+        animProgress += 0.02;
+        chugSoundTicks++;
+        if (chugSoundTicks % 7 === 0) sound.playChug();
+
+        const curDist = startDist * (1 - animProgress);
+        const t1X = CENTER_X - cos45 * curDist;
+        const t1Y = CENTER_Y - sin45 * curDist;
+        drawTrain(t1X, t1Y, Math.PI / 4, 'blue', true);
+
+        const t2X = CENTER_X - cos45 * curDist;
+        const t2Y = CENTER_Y + sin45 * curDist;
+        drawTrain(t2X, t2Y, -Math.PI / 4, 'red', true);
+
+        if (animProgress >= 0.98) {
+          trainState = 'crashed';
+          animProgress = 0;
+          sound.playCrash();
+          createCrashExplosion(CENTER_X, CENTER_Y);
+          triggerScreenShakeEffect();
+          showCanvasToast("💥 EXACT INTERSECTION (x, y) HIT!", "bg-emerald-500 text-slate-950");
+        }
+
+      } else if (trainState === 'running_to_miss') {
+        animProgress += 0.016;
+        chugSoundTicks++;
+        if (chugSoundTicks % 9 === 0) sound.playChug();
+
+        const blueDist = startDist * (1 - animProgress * 1.6);
+        const t1X = CENTER_X - cos45 * blueDist;
+        const t1Y = CENTER_Y - sin45 * blueDist;
+        drawTrain(t1X, t1Y, Math.PI / 4, 'blue', true);
+
+        const redDist = startDist * Math.max(0.42, 1 - animProgress * 0.9);
+        const t2X = CENTER_X - cos45 * redDist;
+        const t2Y = CENTER_Y + sin45 * redDist;
+        const derailTilt = -Math.PI / 4 + (animProgress > 0.4 ? 0.38 : 0);
+        drawTrain(t2X, t2Y, derailTilt, 'red', animProgress < 0.5);
+
+        if (animProgress >= 1.0) {
+          trainState = 'derailed';
+          showCanvasToast("⚠️ MISSED JUNCTION! RECALCULATE ON PAPER!", "bg-rose-600 text-white");
+        }
+
+      } else if (trainState === 'crashed') {
+        shockwaveRadius += 4.5;
+        if (shockwaveRadius < 130) {
+          ctx.save();
+          ctx.strokeStyle = `rgba(250, 204, 21, ${1 - shockwaveRadius / 130})`;
+          ctx.lineWidth = 7;
+          ctx.beginPath();
+          ctx.arc(CENTER_X, CENTER_Y, shockwaveRadius, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        ctx.save();
+        ctx.translate(CENTER_X, CENTER_Y);
+        ctx.rotate(0.35);
+        ctx.fillStyle = '#1e3a8a';
+        ctx.fillRect(-22, -12, 28, 24);
+        ctx.rotate(-0.85);
+        ctx.fillStyle = '#991b1b';
+        ctx.fillRect(-8, -14, 26, 24);
+        ctx.restore();
+
+      } else if (trainState === 'derailed') {
+        const blueDist = startDist * -0.6;
+        drawTrain(CENTER_X - cos45 * blueDist, CENTER_Y - sin45 * blueDist, Math.PI / 4, 'blue');
+
+        const redDist = startDist * 0.42;
+        drawTrain(CENTER_X - cos45 * redDist, CENTER_Y + sin45 * redDist, -Math.PI / 4 + 0.38, 'red');
+      }
+
+      updateAndRenderParticles();
+      requestAnimationFrame(mainAnimationLoop);
+    }
+
+    const lobbyScreen = document.getElementById('lobbyScreen');
+    const gameScreen = document.getElementById('gameScreen');
+    const fullBoardScreen = document.getElementById('fullBoardScreen');
+    const victoryModal = document.getElementById('victoryModal');
+
+    const studentNameInput = document.getElementById('studentNameInput');
+    const classCodeInput = document.getElementById('classCodeInput');
+    const startChallengeBtn = document.getElementById('startChallengeBtn');
+    const quickViewBoardBtn = document.getElementById('quickViewBoardBtn');
+    const navOpenBoardPageBtn = document.getElementById('navOpenBoardPageBtn');
+    const navPlayBtn = document.getElementById('navPlayBtn');
+    const navLobbyBtn = document.getElementById('navLobbyBtn');
+
+    const headerUserBadge = document.getElementById('headerUserBadge');
+    const headerUserName = document.getElementById('headerUserName');
+    const headerClassBadge = document.getElementById('headerClassBadge');
+    const boardToggleFullscreenBtn = document.getElementById('boardToggleFullscreenBtn');
+
+    const audioToggleBtn = document.getElementById('audioToggleBtn');
+    const audioIcon = document.getElementById('audioIcon');
+
+    const savedProgressBanner = document.getElementById('savedProgressBanner');
+    const savedProgressText = document.getElementById('savedProgressText');
+    const resumeSavedSessionBtn = document.getElementById('resumeSavedSessionBtn');
+    const lobbySubProgressBadge = document.getElementById('lobbySubProgressBadge');
+    const lobbyElimProgressBadge = document.getElementById('lobbyElimProgressBadge');
+
+    const badgeQuestionMode = document.getElementById('badgeQuestionMode');
+    const labelQuestionNumber = document.getElementById('labelQuestionNumber');
+    const displayEq1 = document.getElementById('displayEq1');
+    const displayEq2 = document.getElementById('displayEq2');
+    const telemetryEq1 = document.getElementById('telemetryEq1');
+    const telemetryEq2 = document.getElementById('telemetryEq2');
+    const answersGrid = document.getElementById('answersGrid');
+    const wrongFeedbackBanner = document.getElementById('wrongFeedbackBanner');
+    const solutionCard = document.getElementById('solutionCard');
+    const solutionStepsContainer = document.getElementById('solutionStepsContainer');
+    const nextQuestionActionBtn = document.getElementById('nextQuestionActionBtn');
+    const strategyHintToggleBtn = document.getElementById('strategyHintToggleBtn');
+    const strategyHintCard = document.getElementById('strategyHintCard');
+    const strategyHintBody = document.getElementById('strategyHintBody');
+    const closeHintActionBtn = document.getElementById('closeHintActionBtn');
+    const attemptTrackerBadge = document.getElementById('attemptTrackerBadge');
+    const liveStatusNotice = document.getElementById('liveStatusNotice');
+
+    const victoryModalMessage = document.getElementById('victoryModalMessage');
+    const finalScoreDisplay = document.getElementById('finalScoreDisplay');
+    const finalAttemptsDisplay = document.getElementById('finalAttemptsDisplay');
+    const modalReturnLobbyBtn = document.getElementById('modalReturnLobbyBtn');
+    const modalOpenBoardBtn = document.getElementById('modalOpenBoardBtn');
+
+    function showScreen(screen) {
+      lobbyScreen.classList.add('hidden');
+      gameScreen.classList.add('hidden');
+      fullBoardScreen.classList.add('hidden');
+
+      // Reset contextual navigation buttons
+      navLobbyBtn.classList.add('hidden');
+      navPlayBtn.classList.add('hidden');
+      navOpenBoardPageBtn.classList.add('hidden');
+
+      if (screen === 'lobby') {
+        lobbyScreen.classList.remove('hidden');
+        navOpenBoardPageBtn.classList.remove('hidden'); // Show button to check board
+      } else if (screen === 'board') {
+        fullBoardScreen.classList.remove('hidden');
+        navLobbyBtn.classList.remove('hidden'); // Back to Menu
+        if (currentStudent.name && currentStudent.classCode) {
+          navPlayBtn.classList.remove('hidden'); // Single, clean "Back to Game"
+        }
+        renderFullscreenBoards();
+      } else if (screen === 'game') {
+        gameScreen.classList.remove('hidden');
+        navLobbyBtn.classList.remove('hidden'); // Clean "Menu" in header
+        navOpenBoardPageBtn.classList.remove('hidden'); // "Class Board" in header
+      }
+    }
+
+    function checkAndShowExistingProfile() {
+      const name = studentNameInput.value.trim().toLowerCase();
+      const code = classCodeInput.value.trim().toUpperCase();
+
+      if (!name || !code) {
+        savedProgressBanner.classList.add('hidden');
+        lobbySubProgressBadge.innerText = 'Station: Not started';
+        lobbyElimProgressBadge.innerText = 'Station: Not started';
+        return;
+      }
+
+      const records = loadClassRecords(code);
+      const found = records[name];
+
+      if (found) {
+        const sub = found.substitution || { questionIdx: 0, completed: false };
+        const elim = found.elimination || { questionIdx: 0, completed: false };
+
+        lobbySubProgressBadge.innerText = sub.completed ? '🏆 Completed (Q4/4)' : `Station: ${sub.questionIdx > 0 ? `Resuming Q${sub.questionIdx + 1}` : 'Not started'}`;
+        lobbyElimProgressBadge.innerText = elim.completed ? '🏆 Completed (Q4/4)' : `Station: ${elim.questionIdx > 0 ? `Resuming Q${elim.questionIdx + 1}` : 'Not started'}`;
+
+        savedProgressBanner.classList.remove('hidden');
+        savedProgressText.innerText = `Welcome back, ${found.name}! Your previous stations in ${code} are saved.`;
+      } else {
+        savedProgressBanner.classList.add('hidden');
+        lobbySubProgressBadge.innerText = 'Station: New track';
+        lobbyElimProgressBadge.innerText = 'Station: New track';
+      }
+
+      renderFullscreenBoards();
+    }
+
+    studentNameInput.addEventListener('input', checkAndShowExistingProfile);
+    classCodeInput.addEventListener('input', () => {
+      const code = classCodeInput.value.trim().toUpperCase();
+      if (code.length >= 2) {
+        initInternetRelay(code);
+      }
+      checkAndShowExistingProfile();
+    });
+
+    const cloudConfigModal = document.getElementById('cloudConfigModal');
+    const openCloudConfigBtn = document.getElementById('openCloudConfigBtn');
+    const closeCloudConfigBtn = document.getElementById('closeCloudConfigBtn');
+    const dismissCloudConfigBtn = document.getElementById('dismissCloudConfigBtn');
+    const cloudSyncIndicator = document.getElementById('cloudSyncIndicator');
+    const customFirebaseInput = document.getElementById('customFirebaseInput');
+    const saveCustomFirebaseBtn = document.getElementById('saveCustomFirebaseBtn');
+    const cloudConfigNotice = document.getElementById('cloudConfigNotice');
+
+    if (storedFbConfig) {
+      customFirebaseInput.value = storedFbConfig;
+    }
+
+    const toggleCloudModal = (show) => {
+      if (show) cloudConfigModal.classList.remove('hidden');
+      else cloudConfigModal.classList.add('hidden');
+    };
+
+    openCloudConfigBtn.onclick = () => toggleCloudModal(true);
+    cloudSyncIndicator.onclick = () => toggleCloudModal(true);
+    closeCloudConfigBtn.onclick = () => toggleCloudModal(false);
+    dismissCloudConfigBtn.onclick = () => toggleCloudModal(false);
+
+    saveCustomFirebaseBtn.onclick = () => {
+      const val = customFirebaseInput.value.trim();
+      if (val) {
+        try {
+          JSON.parse(val);
+          localStorage.setItem('railroad_custom_firebase_config', val);
+          cloudConfigNotice.className = "p-2 rounded-lg text-xs mb-3 bg-emerald-950 text-emerald-300 border border-emerald-500 block";
+          cloudConfigNotice.innerText = "Firebase config saved! Reloading in 1.5 seconds...";
+          setTimeout(() => location.reload(), 1500);
+        } catch (e) {
+          cloudConfigNotice.className = "p-2 rounded-lg text-xs mb-3 bg-rose-950 text-rose-300 border border-rose-500 block";
+          cloudConfigNotice.innerText = "Please enter a valid JSON object configuration.";
+        }
+      } else {
+        localStorage.removeItem('railroad_custom_firebase_config');
+        cloudConfigNotice.className = "p-2 rounded-lg text-xs mb-3 bg-amber-950 text-amber-300 border border-amber-500 block";
+        cloudConfigNotice.innerText = "Firebase config cleared. Defaulting to Internet Live Relay. Reloading...";
+        setTimeout(() => location.reload(), 1500);
+      }
+    };
+
+    function loadQuestionIndex(idx) {
+      isQuestionLocked = false;
+      trainState = 'idle';
+      animProgress = 0;
+      shockwaveRadius = 0;
+      particles = [];
+      hideCanvasToast();
+
+      currentStudent.questionIdx = idx;
+      currentStudent.attemptsOnCurrent = 1;
+
+      currentQ = activeQuestions[idx];
+      if (!currentQ) {
+        finishModeVictory();
+        return;
+      }
+
+      badgeQuestionMode.innerText = currentQ.label;
+      labelQuestionNumber.innerText = `Question ${idx + 1} / ${activeQuestions.length}`;
+      displayEq1.innerText = currentQ.eq1;
+      displayEq2.innerText = currentQ.eq2;
+      telemetryEq1.innerText = currentQ.eq1;
+      telemetryEq2.innerText = currentQ.eq2;
+      strategyHintBody.innerText = currentQ.hint;
+
+      attemptTrackerBadge.innerHTML = `<i class="fa-solid fa-arrow-rotate-right"></i> Attempt: 1`;
+      liveStatusNotice.innerText = "Select answer coordinates below";
+
+      wrongFeedbackBanner.classList.add('hidden');
+      solutionCard.classList.add('hidden');
+      strategyHintCard.classList.add('hidden');
+
+      answersGrid.innerHTML = '';
+      const shuffledOptions = [...currentQ.options].sort(() => Math.random() - 0.5);
+
+      shuffledOptions.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = "w-full bg-slate-950 hover:bg-slate-800 border-2 border-slate-700 hover:border-amber-400 text-slate-100 font-code font-extrabold text-sm sm:text-base py-3 sm:py-3.5 px-3 rounded-2xl transition flex items-center justify-center gap-2 game-btn shadow-md";
+        btn.innerHTML = `<span class="text-[10px] text-slate-500 uppercase">xy</span> <span>${opt}</span>`;
+        btn.onclick = () => handleAnswerSelection(btn, opt);
+        answersGrid.appendChild(btn);
+      });
+    }
+
+    function handleAnswerSelection(btn, chosenCoord) {
+      if (isQuestionLocked) return;
+
+      if (chosenCoord === currentQ.correct) {
+        isQuestionLocked = true;
+        btn.className = "w-full bg-emerald-600 border-2 border-emerald-400 text-white font-code font-extrabold text-sm sm:text-base py-3 sm:py-3.5 px-3 rounded-2xl shadow-xl flex items-center justify-center gap-2";
+
+        const allButtons = answersGrid.querySelectorAll('button');
+        allButtons.forEach(b => {
+          if (b !== btn) b.disabled = true;
+        });
+
+        wrongFeedbackBanner.classList.add('hidden');
+        trainState = 'running_to_crash';
+        animProgress = 0;
+
+        const earnedPoints = Math.max(20, 100 - (currentStudent.attemptsOnCurrent - 1) * 25);
+        currentStudent.score += earnedPoints;
+
+        solutionStepsContainer.innerHTML = currentQ.steps.map(step => `<div class="leading-snug">${step}</div>`).join('');
+        solutionCard.classList.remove('hidden');
+
+        saveStudentProgressPermanently();
+
+      } else {
+        sound.playBrake();
+        btn.classList.add('shake-anim', '!border-rose-500', '!text-rose-400', '!bg-rose-950/40');
+        btn.disabled = true;
+
+        trainState = 'running_to_miss';
+        animProgress = 0;
+
+        currentStudent.attemptsOnCurrent++;
+        currentStudent.totalRetries++;
+        attemptTrackerBadge.innerHTML = `<i class="fa-solid fa-arrow-rotate-right text-rose-400"></i> Attempt: ${currentStudent.attemptsOnCurrent}`;
+        liveStatusNotice.innerText = "Calculation error! Recalculate on paper!";
+        wrongFeedbackBanner.classList.remove('hidden');
+
+        setTimeout(() => {
+          btn.classList.remove('shake-anim');
+        }, 500);
+
+        saveStudentProgressPermanently();
+      }
+    }
+
+    nextQuestionActionBtn.onclick = () => {
+      if (currentStudent.questionIdx + 1 < activeQuestions.length) {
+        loadQuestionIndex(currentStudent.questionIdx + 1);
+        sound.playWhistle();
+      } else {
+        finishModeVictory();
+      }
+    };
+
+    function finishModeVictory() {
+      currentStudent.completed = true;
+      saveStudentProgressPermanently();
+
+      finalScoreDisplay.innerText = currentStudent.score;
+      finalAttemptsDisplay.innerText = currentStudent.totalRetries;
+      victoryModalMessage.innerText = `Sensational! You mastered the ${currentStudent.mode === 'substitution' ? 'Substitution' : 'Elimination'} track for Mind Test 9.1h with ${currentStudent.score} points!`;
+
+      victoryModal.classList.remove('hidden');
+      sound.playCrash();
+    }
+
+    function startOrResumeSession() {
+      const enteredName = studentNameInput.value.trim();
+      const enteredClass = classCodeInput.value.trim().toUpperCase();
+
+      if (!enteredName) {
+        showAppToast("Please enter your Student Name first!");
+        studentNameInput.focus();
+        return;
+      }
+      if (!enteredClass) {
+        showAppToast("Please enter your Class Code!");
+        classCodeInput.focus();
+        return;
+      }
+
+      const selectedModeRadio = document.querySelector('input[name="practiceMode"]:checked');
+      const selectedMode = selectedModeRadio ? selectedModeRadio.value : 'substitution';
+
+      currentStudent.name = enteredName;
+      currentStudent.classCode = enteredClass;
+      currentStudent.mode = selectedMode;
+
+      activeQuestions = TEXTBOOK_QUESTIONS[selectedMode];
+
+      const records = loadClassRecords(enteredClass);
+      const studentKey = enteredName.toLowerCase().trim();
+      const existing = records[studentKey];
+
+      if (existing && existing[selectedMode]) {
+        const savedData = existing[selectedMode];
+        currentStudent.questionIdx = savedData.completed ? 0 : (savedData.questionIdx || 0);
+        currentStudent.score = savedData.score || 0;
+        currentStudent.totalRetries = savedData.retries || 0;
+        currentStudent.completed = savedData.completed || false;
+      } else {
+        currentStudent.questionIdx = 0;
+        currentStudent.score = 0;
+        currentStudent.totalRetries = 0;
+        currentStudent.completed = false;
+      }
+
+      headerUserName.innerText = currentStudent.name;
+      headerClassBadge.innerText = currentStudent.classCode;
+      headerUserBadge.classList.remove('hidden');
+
+      initInternetRelay(enteredClass);
+
+      showScreen('game');
+      victoryModal.classList.add('hidden');
+
+      saveStudentProgressPermanently();
+      sound.playWhistle();
+      loadQuestionIndex(currentStudent.questionIdx);
+    }
+
+    startChallengeBtn.onclick = startOrResumeSession;
+    resumeSavedSessionBtn.onclick = startOrResumeSession;
+
+    quickViewBoardBtn.onclick = () => {
+      const code = classCodeInput.value.trim().toUpperCase();
+      if (code) currentStudent.classCode = code;
+      showScreen('board');
+    };
+
+    navOpenBoardPageBtn.onclick = () => {
+      const code = (currentStudent.classCode || classCodeInput.value).trim().toUpperCase();
+      if (code) currentStudent.classCode = code;
+      showScreen('board');
+    };
+
+    navLobbyBtn.onclick = () => showScreen('lobby');
+    navPlayBtn.onclick = () => showScreen('game');
+
+    modalReturnLobbyBtn.onclick = () => {
+      victoryModal.classList.add('hidden');
+      showScreen('lobby');
+    };
+    modalOpenBoardBtn.onclick = () => {
+      victoryModal.classList.add('hidden');
+      showScreen('board');
+    };
+
+    strategyHintToggleBtn.onclick = () => strategyHintCard.classList.toggle('hidden');
+    closeHintActionBtn.onclick = () => strategyHintCard.classList.add('hidden');
+
+    audioToggleBtn.onclick = () => {
+      sound.init();
+      sound.isMuted = !sound.isMuted;
+      if (sound.isMuted) {
+        audioIcon.className = "fa-solid fa-volume-xmark text-rose-400";
+      } else {
+        audioIcon.className = "fa-solid fa-volume-high text-slate-200";
+        sound.playWhistle();
+      }
+    };
+
+    boardToggleFullscreenBtn.onclick = () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+        boardToggleFullscreenBtn.innerHTML = '<i class="fa-solid fa-compress"></i> Exit Fullscreen';
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+        boardToggleFullscreenBtn.innerHTML = '<i class="fa-solid fa-expand"></i> Fullscreen';
+      }
+    };
+
+    if (channel) {
+      channel.onmessage = (event) => {
+        if (event.data && event.data.type === 'CLASS_SYNC') {
+          const currentCode = (currentStudent.classCode || document.getElementById('classCodeInput').value).toUpperCase().trim();
+          if (event.data.classCode === currentCode) {
+            renderFullscreenBoards();
+          }
+        }
+      };
+    }
+
+    window.addEventListener('storage', (e) => {
+      if (e.key && e.key.startsWith('railroad_v3_class_')) {
+        renderFullscreenBoards();
+      }
+    });
+
+    window.onload = () => {
+      const defaultCode = classCodeInput.value.trim().toUpperCase();
+      if (defaultCode) {
+        initInternetRelay(defaultCode);
+      }
+      renderFullscreenBoards();
+      mainAnimationLoop();
+    };
+  </script>
+</body>
+</html>
